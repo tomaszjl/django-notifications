@@ -24,18 +24,44 @@ function fill_notification_list(data) {
     if (menus) {
         var messages = data.unread_list.map(function (item) {
             var message = "";
+            if(typeof item.actor !== 'undefined'){
+                message += item.actor;
+            }
+            if(typeof item.verb !== 'undefined'){
+                message += " " + item.verb;
+            }
+            if(typeof item.target !== 'undefined'){
+                message += " " + item.target;
+            }
+            if(typeof item.timestamp !== 'undefined'){
+                message += " " + item.timestamp;
+            }
+            return '<li>' + message + '</li>';
+        }).join('')
 
-            if (typeof item.actor !== 'undefined') {
-                message = item.actor;
+        for (var i = 0; i < menus.length; i++){
+            menus[i].innerHTML = messages;
+        }
+    }
+}
+
+function fill_notification_list_with_urls(data) {
+    var menus = document.getElementsByClassName(notify_menu_class);
+    if (menus) {
+        var messages = data.unread_list.map(function (item) {
+            var message = "";
+
+            if(typeof item.actor !== 'undefined'){
+                message += "<a href='" + item.actor_url + "'>" + item.actor + "</a>";
             }
-            if (typeof item.verb !== 'undefined') {
-                message = message + " " + item.verb;
+            if(typeof item.verb !== 'undefined'){
+                message += item.verb;
             }
-            if (typeof item.target !== 'undefined') {
-                message = message + " " + item.target;
+            if(typeof item.target !== 'undefined'){
+                message += " <a href='" + item.target_url + "'>" + item.target + "</a>";
             }
-            if (typeof item.timestamp !== 'undefined') {
-                message = message + " " + item.timestamp;
+            if(typeof item.timestamp !== 'undefined'){
+                message += " " + item.timestamp;
             }
             return '<li>' + message + '</li>';
         }).join('')
