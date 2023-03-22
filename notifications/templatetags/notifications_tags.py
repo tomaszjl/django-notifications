@@ -1,8 +1,5 @@
 ''' Django notifications template tags file '''
 # -*- coding: utf-8 -*-
-from distutils.version import StrictVersion  # pylint: disable=no-name-in-module,import-error
-
-from django import get_version
 from django.template import Library
 from django.utils.html import format_html
 
@@ -21,10 +18,8 @@ def notifications_unread(context):
     return user.notifications.unread().count()
 
 
-if StrictVersion(get_version()) >= StrictVersion('2.0'):
-    notifications_unread = register.simple_tag(takes_context=True)(notifications_unread)  # pylint: disable=invalid-name
-else:
-    notifications_unread = register.assignment_tag(takes_context=True)(notifications_unread)  # noqa
+notifications_unread = register.simple_tag(takes_context=True)(notifications_unread)  # pylint: disable=invalid-name
+
 
 
 @register.filter
