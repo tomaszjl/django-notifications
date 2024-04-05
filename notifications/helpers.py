@@ -14,6 +14,7 @@ def get_num_to_fetch(request):
         num_to_fetch = default_num_to_fetch
     return num_to_fetch
 
+
 def get_notification_list(request, method_name='all'):
     num_to_fetch = get_num_to_fetch(request)
     notification_list = []
@@ -22,10 +23,22 @@ def get_notification_list(request, method_name='all'):
         struct['slug'] = id2slug(notification.id)
         if notification.actor:
             struct['actor'] = str(notification.actor)
+            struct['actor_url'] = str(notification.actor.get_absolute_url()) if hasattr(notification.actor,
+                                                                                        'get_absolute_url') \
+                                                                                and callable(
+                notification.actor.get_absolute_url) else ''
         if notification.target:
             struct['target'] = str(notification.target)
+            struct['target_url'] = str(notification.target.get_absolute_url()) if hasattr(notification.target,
+                                                                                          'get_absolute_url') \
+                                                                                  and callable(
+                notification.target.get_absolute_url) else ''
         if notification.action_object:
             struct['action_object'] = str(notification.action_object)
+            struct['action_object_url'] = str(notification.action_object.get_absolute_url()) if hasattr(
+                notification.action_object, 'get_absolute_url') \
+                                                                                                and callable(
+                notification.action_object.get_absolute_url) else ''
         if notification.data:
             struct['data'] = notification.data
         notification_list.append(struct)

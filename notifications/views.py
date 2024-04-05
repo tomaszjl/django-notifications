@@ -166,28 +166,6 @@ def live_unread_notification_list(request):
 
     unread_list = get_notification_list(request, 'unread')
 
-    unread_list = []
-
-    for notification in request.user.notifications.unread()[0:num_to_fetch]:
-        struct = model_to_dict(notification)
-        struct['slug'] = id2slug(notification.id)
-        if notification.actor:
-            struct['actor'] = str(notification.actor)
-            struct['actor_url'] = str(notification.actor.get_absolute_url()) if hasattr(notification.actor, 'get_absolute_url') \
-                                                                                and callable(notification.actor.get_absolute_url) else ''
-        if notification.target:
-            struct['target'] = str(notification.target)
-            struct['target_url'] = str(notification.target.get_absolute_url()) if hasattr(notification.target, 'get_absolute_url') \
-                                                                                and callable(notification.target.get_absolute_url) else ''
-        if notification.action_object:
-            struct['action_object'] = str(notification.action_object)
-            struct['action_object_url'] = str(notification.action_object.get_absolute_url()) if hasattr(notification.action_object, 'get_absolute_url') \
-                                                                                                and callable(notification.action_object.get_absolute_url) else ''
-        if notification.data:
-            struct['data'] = notification.data
-        unread_list.append(struct)
-        if request.GET.get('mark_as_read'):
-            notification.mark_as_read()
     data = {
         'unread_count': request.user.notifications.unread().count(),
         'unread_list': unread_list
@@ -212,28 +190,6 @@ def live_all_notification_list(request):
 
     all_list = get_notification_list(request)
 
-    all_list = []
-
-    for notification in request.user.notifications.all()[0:num_to_fetch]:
-        struct = model_to_dict(notification)
-        struct['slug'] = id2slug(notification.id)
-        if notification.actor:
-            struct['actor'] = str(notification.actor)
-            struct['actor_url'] = str(notification.actor.get_absolute_url()) if hasattr(notification.actor, 'get_absolute_url') \
-                                                                                and callable(notification.actor.get_absolute_url) else ''
-        if notification.target:
-            struct['target'] = str(notification.target)
-            struct['target_url'] = str(notification.target.get_absolute_url()) if hasattr(notification.target, 'get_absolute_url') \
-                                                                                and callable(notification.target.get_absolute_url) else ''
-        if notification.action_object:
-            struct['action_object'] = str(notification.action_object)
-            struct['action_object_url'] = str(notification.action_object.get_absolute_url()) if hasattr(notification.action_object, 'get_absolute_url') \
-                                                                                                and callable(notification.action_object.get_absolute_url) else ''
-        if notification.data:
-            struct['data'] = notification.data
-        all_list.append(struct)
-        if request.GET.get('mark_as_read'):
-            notification.mark_as_read()
     data = {
         'all_count': request.user.notifications.count(),
         'all_list': all_list
