@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.9.0
+
+  - Added support for Django 5.0, 5.1, and 5.2
+  - Added support for Python 3.12 and 3.13
+  - Dropped support for Django < 4.2
+  - Dropped support for Python < 3.9
+  - Fixed distutils deprecation
+
+## 1.8.3
+
+  - Fixes missing static folder/files
+
+## 1.8.2
+
+  - Added the migration for verbose_name changes
+
 ## 1.8.0
 
   - Added support for Django 4.1

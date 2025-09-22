@@ -38,8 +38,8 @@ Spec: <http://activitystrea.ms/specs/atom/1.0/>
 
 ## Requirements
 
--   Python 3.7, 3.8, 3.9, 3.10, 3.11
--   Django 3.2, 4.0, 4.1
+-   Python 3.9, 3.10, 3.11, 3.12, 3.13
+-   Django 4.2, 5.1, 5.2
 
 ## Installation
 
@@ -78,18 +78,12 @@ INSTALLED_APPS = (
 Add the notifications urls to your urlconf:
 
 ```python
-import notifications.urls
-
 urlpatterns = [
     ...
-    url('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
+    path('inbox/notifications/', include('notifications.urls', namespace='notifications')),
     ...
 ]
 ```
-
-The method of installing these urls, importing rather than using
-`'notifications.urls'`, is required to ensure that the urls are
-installed in the `notifications` namespace.
 
 To run schema migration, execute
 `python manage.py migrate notifications`.
@@ -261,7 +255,7 @@ Mark the current object as read.
 
 ### Template tags
 
-Put `{% load notifications\_tags %}` in the template before
+Put `{% load notifications_tags %}` in the template before
 you actually use notification tags.
 
 ### `notifications_unread`
@@ -316,6 +310,11 @@ There are two possible API calls that can be made:
     For example, get `api/unread_list/?max=3&mark_as_read=true` returns
     3 notifications and mark them read (remove from list on next
     request).
+
+    The list outputs `target_url`, `actor_url`, `action_object_url`.
+    This URL is generated from standard Django `Model.get_absolute_url()` or
+    you can override the URL just for notifications by implementing
+    `Model.get_url_for_notifications(notification, request)`.
 
 ### How to use:
 

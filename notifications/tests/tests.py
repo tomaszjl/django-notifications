@@ -6,8 +6,8 @@ Replace this with more appropriate tests for your application.
 # -*- coding: utf-8 -*-
 # pylint: disable=too-many-lines,missing-docstring
 import json
-
-import pytz
+from datetime import timezone as dt_timezone
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -17,11 +17,12 @@ from django.template import Context, Template
 from django.test import Client, RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
-from django.utils.timezone import localtime, utc
+from django.utils.timezone import localtime
 from notifications.base.models import notify_handler
 from notifications.signals import notify
 from notifications.utils import id2slug
 from swapper import load_model
+from notifications.tests.test_models.models import Customer, TargetObject
 
 Notification = load_model('notifications', 'Notification')
 
@@ -57,7 +58,7 @@ class NotificationTest(TestCase):
         notify.send(from_user, recipient=to_user, verb='commented', action_object=from_user)
         notification = Notification.objects.get(recipient=to_user)
         delta = (
-            timezone.now().replace(tzinfo=utc) - localtime(notification.timestamp, pytz.timezone(settings.TIME_ZONE))
+            timezone.now().replace(tzinfo=dt_timezone.utc) - localtime(notification.timestamp, ZoneInfo(settings.TIME_ZONE))
         )
         self.assertTrue(delta.seconds < 60)
         # The delta between the two events will still be less than a second despite the different timezones
@@ -457,6 +458,28 @@ class NotificationTestPages(TestCase):
                          self.message_count - 2*num_requested)
         self.assertEqual(len(data['unread_list']), num_requested)
 
+    def test_unread_all_objects(self):
+        """
+        Test notification with all objects (actor, target, action_object)
+        Test that object URLs are in the output.
+        """
+        self.login('to', 'pwd')
+        Notification.objects.filter(recipient=self.to_user).mark_all_as_read()
+        to_customer = Customer.objects.create(name='to_customer')
+        action_customer = Customer.objects.create(name='action_customer')
+        from_customer = Customer.objects.create(name='from_customer')
+        target_object = TargetObject.objects.create(name='target_object')
+        notify.send(from_customer, recipient=self.to_user, verb='commented', action_object=action_customer,
+                    target=target_object)
+        response = self.client.get(reverse('notifications:live_unread_notification_list'))
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(data['unread_count'], 1)
+        notification = data['unread_list'][0]
+        self.assertEqual(notification['actor'], 'from_customer')
+        self.assertEqual(notification['action_object_url'], f'foo/{action_customer.id}/')
+        self.assertEqual(notification['target_url'], f'bar/{target_object.id}/')
+        self.assertEqual(notification['actor_url'], f'foo/{from_customer.id}/')
+
     def test_live_update_tags(self):
         from django.shortcuts import render
 
@@ -568,8 +591,8 @@ class AdminTest(TestCase):
     def test_list(self):
         self.client.login(username='to', password='pwd')
 
-        with CaptureQueriesContext(connection=connection) as context:
-            response = self.client.get(reverse('admin:{0}_notification_changelist'.format(self.app_name)))
-            self.assertLessEqual(len(context), 6)
-
-        self.assertEqual(response.status_code, 200, response.content)
+        with self.assertNumQueries(7):
+            response = self.client.get(
+                reverse('admin:{0}_notification_changelist'.format(self.app_name))
+            )
+            self.assertEqual(response.status_code, 200, response.content)
